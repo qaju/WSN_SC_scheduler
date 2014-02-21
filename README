@@ -1,0 +1,16 @@
+Created by Qianao Ju in Feb 20, 2014 to conduct SC based task scheduling experiments
+
+Experimental platform:  CrossBow IRIS
+MCU:			Atmega 1281
+
+
+Version 1.0: Feb 20, 2014
+	ADC PIN 4 is used to measure SC terminal voltage.
+	MCU internal reference voltage is used to do ADC calibration
+	5 Timers are triggered in the experiment:
+	Timer 1: periodically measure SC branch V1
+	Timer 2: periodically measure SC branch V2
+	Timer 3: periodically call tasks scheduler
+	Timer 4: periodically reads ADC, ADC measurement timer
+	Timer 5: start one shot timer, is used to hold system to do lazy scheduling
+
