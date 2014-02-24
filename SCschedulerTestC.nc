@@ -24,7 +24,7 @@ module SCschedulerTestC
 implementation
 {
 	message_t sendBuf;
-	bool sendBusy;
+	bool sendBusy = FALSE;
 	scscheduler local;
 	uint8_t readn_sc;
 	uint8_t readn_ref;
@@ -40,14 +40,42 @@ implementation
 	float Vpow_fp = 0.f;                           //floating point of node's power vol
 	
 	float V1, V2;                            //
-	float V1_0 = 0;                          //*_0 is initial condition
-	float V2_0;
-	bool assign;                             //not used yet
+	float V1_0 = 1.5f;                          //*_0 is initial condition
+	float V2_0 = 1.5f;
+	bool assign = FALSE;                             //not used yet
+	
+	
+	// parameters for Panasonic 22F SC
+	float r1c0 = 0.93257f;
+	float r1kv = 0.3705f;
+	float r2c2 = 329.9943f;
 	
 	
 	void report_problem(){ call Leds.led0Toggle(); }
 	void report_sent() { call Leds.led1Toggle(); }
 	void report_receive() { call Leds.led2Toggle();  }
+	
+	
+	void RFmsg()
+	{
+		if (!sendBusy && sizeof(local) <= call AMSend.maxPayloadLength())
+		{
+			memcpy(call AMSend.getPayload(&sendBuf, sizeof(local)),&local, sizeof local);
+			if ( call AMSend.send( AM_BROADCAST_ADDR, &sendBuf, sizeof local ) == SUCCESS)
+				sendBusy = TRUE;
+		}
+		
+		if ( !sendBusy )
+			report_problem();
+		
+		
+		if ( call SCTerminalV.read() != SUCCESS )
+			report_problem();
+		
+		if ( call RefV.read() != SUCCESS )
+			report_problem();
+		
+	}
 	
 	
 	event void Boot.booted()
@@ -56,8 +84,11 @@ implementation
 		local.intervalV1 = V1INTERVAL;
 		local.intervalV2 = V2INTERVAL;
 		local.intervalADC = ADCINTERVAL;
+		local.PC = 0x0000;               // period counter
 		
 		v1_available = v2_available = FALSE;
+		V1 = V1_0;
+		V2 = V2_0;
 		
 		local.id = TOS_NODE_ID;
 		
@@ -97,10 +128,7 @@ implementation
 		else
 			report_problem();
 		
-		sendBusy = FALSE;
-		
-		
-		
+		sendBusy = FALSE;	
 	}
 
 	event message_t * Receive.receive(message_t *msg, void *payload, uint8_t len)
@@ -130,9 +158,14 @@ implementation
 	{
 		if ( Vsc_fp > 1.05f )
 		{
+			V1 = V1 + ((float)(local.intervalV1 / 1000)) * (Vpow_fp - V1)/ (r1c0 +r1kv * V1);
 			
 			//compute V1
 			v1_available = TRUE;
+		}
+		else
+		{
+			v1_available = FALSE;
 		}
 		// TODO Auto-generated method stub
 	}
@@ -143,6 +176,7 @@ implementation
 	{
 		if ( Vsc_fp > 1.05f )
 		{
+			V2 = V2 + ((float)(local.countV2 / 1000)) / r2c2 * (Vpow_fp - V2 );
 			//compute V2
 			v2_available = TRUE;
 		}
@@ -160,7 +194,11 @@ implementation
 		{
 			if ( V1 > V2 )        // greedy scheduling
 			{
-				
+				RFmsg();				
+			}
+			else
+			{
+				call Timer5.startOneShot(500);
 			}
 		}
 		// TODO Auto-generated method stub
@@ -216,7 +254,9 @@ implementation
 		
 	}
 
-	event void Timer5.fired(){
+	event void Timer5.fired()
+	{
 		// TODO Auto-generated method stub
+		RFmsg();
 	}
 }

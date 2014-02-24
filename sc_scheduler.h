@@ -15,6 +15,7 @@ enum {
 	NREADINGref = 3,          
 	
 	TASKINTERVAL= 1000,
+	LAZYDELAY = 500,
 	
 	SC_SCH_TEST = 0x93
 };
@@ -26,7 +27,8 @@ typedef nx_struct scscheduler {
 	nx_uint16_t intervalV2;
 	nx_uint16_t intervalTask;
 	nx_uint16_t intervalADC;
-	nx_uint16_t thdsoft;              // software threshold for SC terminal vol 
+	nx_uint16_t PC;                   // period count
+	nx_uint16_t thdsoft;              // software threshold for SC terminal voltage 
 	nx_uint16_t id;
 	nx_uint16_t countV1;
 	nx_uint16_t countV2;

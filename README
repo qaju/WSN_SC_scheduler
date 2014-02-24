@@ -14,3 +14,9 @@ Version 1.0: Feb 20, 2014
 	Timer 4: periodically reads ADC, ADC measurement timer
 	Timer 5: start one shot timer, is used to hold system to do lazy scheduling
 
+
+Version 1.1: Feb 23, 2014
+	Panasonic 22F parameters are included in codes
+	Initial value is set to be V1 = V2 =1.5 V
+	Software threshold is set to be 1.05 V
+	Lazy scheduling delay slot is 500 ms
