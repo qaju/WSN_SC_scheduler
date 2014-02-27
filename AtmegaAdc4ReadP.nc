@@ -4,14 +4,14 @@ module AtmegaAdc4ReadP
 }
 implementation
 {
-
-	async command uint8_t Atm128AdcConfig.getRefVoltage()
+    // serious bug was made in mixing the order of getPrescaler and getRefVoltage 
+	async command uint8_t Atm128AdcConfig.getPrescaler()
 	{
 		return ATM128_ADC_PRESCALE;
 		// TODO Auto-generated method stub
 	}
 
-	async command uint8_t Atm128AdcConfig.getPrescaler()
+	async command uint8_t Atm128AdcConfig.getRefVoltage()
 	{
 		return ATM128_ADC_VREF_OFF;
 		// TODO Auto-generated method stub

@@ -11,8 +11,8 @@ implementation
 	new TimerMilliC() as Timer3,                 //main scheduler timer, to assign tasks inside period
 	new TimerMilliC() as Timer4,                 // system timer to trigger ADC reading, to measure Vsc and Vref
 	new TimerMilliC() as Timer5,                 // Timer to implement lazy scheduling
-	new SCvol() as SCTerminalV,                  // ADC reading of SC terminal voltage
-	new DemoSensorC() as RefV,                   // ADC reading of internal ref voltage, 1V for iris
+	new SCvolC() as SCVsensor,                  // ADC reading of SC terminal voltage
+	new DemoSensorC() as RefVsensor,                   // ADC reading of internal ref voltage, 1V for iris
 	new AMSenderC(SC_SCH_TEST) , 
 	new AMReceiverC(SC_SCH_TEST);
 	
@@ -20,8 +20,8 @@ implementation
 	SCschedulerTestC.RadioControl -> ActiveMessageC;
 	SCschedulerTestC.AMSend -> AMSenderC;
 	SCschedulerTestC.Receive -> AMReceiverC;
-	SCschedulerTestC.SCTerminalV -> SCTerminalV;
-	SCschedulerTestC.RefV -> RefV;
+	SCschedulerTestC.SCTerminalV -> SCVsensor;
+	SCschedulerTestC.RefV -> RefVsensor;
 	SCschedulerTestC.Timer1 -> Timer1;
 	SCschedulerTestC.Timer2 -> Timer2;
 	SCschedulerTestC.Timer3 -> Timer3;

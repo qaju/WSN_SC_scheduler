@@ -20,3 +20,6 @@ Version 1.1: Feb 23, 2014
 	Initial value is set to be V1 = V2 =1.5 V
 	Software threshold is set to be 1.05 V
 	Lazy scheduling delay slot is 500 ms
+
+Version 1.2: Feb 26, 2014
+	Fixed serious bug in SC terminal voltage sensor (the order of getPrescaler and getRefVoltage was mixed)

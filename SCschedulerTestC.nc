@@ -69,12 +69,7 @@ implementation
 			report_problem();
 		
 		
-		if ( call SCTerminalV.read() != SUCCESS )
-			report_problem();
-		
-		if ( call RefV.read() != SUCCESS )
-			report_problem();
-		
+				
 	}
 	
 	
@@ -84,7 +79,13 @@ implementation
 		local.intervalV1 = V1INTERVAL;
 		local.intervalV2 = V2INTERVAL;
 		local.intervalADC = ADCINTERVAL;
+		
+		local.Vsc = 0;
+		local.Vref = 0;
 		local.PC = 0x0000;               // period counter
+		
+		readn_sc = 0;
+		readn_ref = 0;
 		
 		v1_available = v2_available = FALSE;
 		V1 = V1_0;
@@ -156,12 +157,13 @@ implementation
     // compute V1, needs to keep track every 1 s
 	event void Timer1.fired()                      
 	{
-		if ( Vsc_fp > 1.05f )
+		if ( Vsc_fp > 0.05f )
 		{
 			V1 = V1 + ((float)(local.intervalV1 / 1000)) * (Vpow_fp - V1)/ (r1c0 +r1kv * V1);
 			
 			//compute V1
 			v1_available = TRUE;
+			//report_problem();
 		}
 		else
 		{
@@ -174,9 +176,9 @@ implementation
     // compute v2, needs to keep track every 10 s
 	event void Timer2.fired()                      
 	{
-		if ( Vsc_fp > 1.05f )
+		if ( Vsc_fp > 0.05f )
 		{
-			V2 = V2 + ((float)(local.countV2 / 1000)) / r2c2 * (Vpow_fp - V2 );
+			V2 = V2 + ((float)(local.intervalV2 / 1000)) / r2c2 * (Vpow_fp - V2 );
 			//compute V2
 			v2_available = TRUE;
 		}
@@ -190,8 +192,13 @@ implementation
     // main task scheduler, assign tasks according to SC charge redistribution status
 	event void Timer3.fired()                    
 	{
+		
+		
 		if ( v1_available && v2_available )
 		{
+			readn_sc = 0;
+			readn_ref = 0;
+			
 			if ( V1 > V2 )        // greedy scheduling
 			{
 				RFmsg();				
@@ -208,48 +215,82 @@ implementation
 	//system timer to trigger ADC readings
 	event void Timer4.fired()
 	{
+		
+		
+			
 		if ( readn_sc == NREADINGsc  && readn_ref == NREADINGref)
 		{
 			local.Vref = local.Vref / NREADINGsc;
 			local.Vsc = local.Vsc / NREADINGsc;
 			
+			
+			
 			//compute SC terminal voltage and node's power voltage
 			Vpow_fp = 0.1f + 1.095f * 1023.f/ (float)local.Vref;
-			Vsc_fp = (float)local.Vsc * Vpow_fp / 1023.f;
+			Vsc_fp = ((float)local.Vsc) * Vpow_fp / 1023.f;	
+			readn_sc = readn_ref = 0;
+			local.Vref = 0;
+			local.Vsc = 0;
+			report_problem();	
+								
+		}	
+		
+		
+		
+		
+		
+		
+		if (call RefV.read() != SUCCESS)
+			report_problem();	
+		
+		
+		if (call SCTerminalV.read() != SUCCESS)
+			report_problem();
+		
 			
-			
-		}
+		
+		
 		// TODO Auto-generated method stub
 	}
 
 	event void SCTerminalV.readDone(error_t result, uint16_t val)
 	{
+		report_problem();
+		
 		// TODO Auto-generated method stub
 		if ( result != SUCCESS )
 		{
 			val = 0xffff;
 			report_problem();
-		}	
-		else if ( readn_sc < NREADINGsc )
+		}
+		
+			
+		if ( readn_sc < NREADINGsc )
 		{
 			local.Vsc += val;
 			readn_sc ++;
+			
 		}
 		
 	}
 
 	event void RefV.readDone(error_t result, uint16_t val)
 	{
+		
 		// TODO Auto-generated method stub
+		report_receive();
 		if ( result != SUCCESS)
 		{
 			val = 0xffff;
 			report_problem();
 		}
-		else if ( readn_ref < NREADINGref )
+		
+		
+		if ( readn_ref < NREADINGref )
 		{
 			local.Vref += val;
 			readn_ref ++;
+			
 		}	
 		
 	}
