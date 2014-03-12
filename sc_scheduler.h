@@ -11,8 +11,8 @@ enum {
 	V2INTERVAL = 10000,
 	ADCINTERVAL = 50,
 	
-	NREADINGsc = 3,                   // # of SC terminal voltage readings
-	NREADINGref = 3,          
+	NREADINGsc = 4,                   // # of SC terminal voltage readings
+	NREADINGref = 4,          
 	
 	TASKINTERVAL= 1000,
 	LAZYDELAY = 500,

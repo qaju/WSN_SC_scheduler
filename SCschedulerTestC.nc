@@ -42,7 +42,7 @@ implementation
 	float V1, V2;                            //
 	float V1_0 = 1.5f;                          //*_0 is initial condition
 	float V2_0 = 1.5f;
-	bool assign = FALSE;                             //not used yet
+	bool adc_done = FALSE;                             //
 	
 	
 	// parameters for Panasonic 22F SC
@@ -107,6 +107,7 @@ implementation
 		call Timer2.startPeriodic( local.intervalV2 );              // measure V2 
 		call Timer3.startPeriodic( local.intervalTask );            //schedule task
 		call Timer4.startPeriodic( local.intervalADC);
+	
 	}
 	
 	
@@ -157,7 +158,7 @@ implementation
     // compute V1, needs to keep track every 1 s
 	event void Timer1.fired()                      
 	{
-		if ( Vsc_fp > 0.05f )
+		if ( Vsc_fp > 1.15f  && adc_done )
 		{
 			V1 = V1 + ((float)(local.intervalV1 / 1000)) * (Vpow_fp - V1)/ (r1c0 +r1kv * V1);
 			
@@ -176,7 +177,7 @@ implementation
     // compute v2, needs to keep track every 10 s
 	event void Timer2.fired()                      
 	{
-		if ( Vsc_fp > 0.05f )
+		if ( Vsc_fp > 1.15f  && adc_done )
 		{
 			V2 = V2 + ((float)(local.intervalV2 / 1000)) / r2c2 * (Vpow_fp - V2 );
 			//compute V2
@@ -193,11 +194,13 @@ implementation
 	event void Timer3.fired()                    
 	{
 		
-		
+		local.PC ++;
 		if ( v1_available && v2_available )
 		{
 			readn_sc = 0;
 			readn_ref = 0;
+			local.Vref = local.Vref / NREADINGsc;
+			local.Vsc = local.Vsc / NREADINGsc;
 			
 			if ( V1 > V2 )        // greedy scheduling
 			{
@@ -207,6 +210,7 @@ implementation
 			{
 				call Timer5.startOneShot(500);
 			}
+			adc_done = FALSE;
 		}
 		// TODO Auto-generated method stub
 	}
@@ -222,6 +226,7 @@ implementation
 		{
 			local.Vref = local.Vref / NREADINGsc;
 			local.Vsc = local.Vsc / NREADINGsc;
+			adc_done = TRUE;
 			
 			
 			
@@ -265,7 +270,7 @@ implementation
 		}
 		
 			
-		if ( readn_sc < NREADINGsc )
+		if ( readn_sc <= NREADINGsc )
 		{
 			local.Vsc += val;
 			readn_sc ++;
@@ -286,7 +291,7 @@ implementation
 		}
 		
 		
-		if ( readn_ref < NREADINGref )
+		if ( readn_ref <= NREADINGref  )
 		{
 			local.Vref += val;
 			readn_ref ++;

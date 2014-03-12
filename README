@@ -23,3 +23,5 @@ Version 1.1: Feb 23, 2014
 
 Version 1.2: Feb 26, 2014
 	Fixed serious bug in SC terminal voltage sensor (the order of getPrescaler and getRefVoltage was mixed)
+
+Version 1.21 Mar 12, 2014
